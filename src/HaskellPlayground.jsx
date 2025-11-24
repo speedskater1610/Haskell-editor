@@ -25,7 +25,6 @@ factorial n = n * factorial (n-1)`);
       const outputLines = [];
       const functions = {};
       
-      // Parse code into function definitions
       const parseCode = () => {
         const lines = code.split('\n');
         let i = 0;
@@ -103,7 +102,6 @@ factorial n = n * factorial (n-1)`);
       
       parseCode();
       
-      // Evaluator - optimized to reduce stack usage
       const evaluate = (expr, env = {}) => {
         expr = expr.trim();
         
@@ -256,37 +254,6 @@ factorial n = n * factorial (n-1)`);
     }
     
     setIsRunning(false);
-  };
-
-  const highlightCode = (text) => {
-    const keywords = ['do', 'where', 'if', 'then', 'else', 'let', 'in', 'case', 'of', 'data', 'type', 'newtype', 'class', 'instance'];
-    const builtins = ['putStrLn', 'show', 'print', 'main'];
-    
-    let result = text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-    
-    keywords.forEach(kw => {
-      result = result.replace(new RegExp(`\\b${kw}\\b`, 'g'), `<span class="keyword">${kw}</span>`);
-    });
-    
-    builtins.forEach(fn => {
-      result = result.replace(new RegExp(`\\b${fn}\\b`, 'g'), `<span class="builtin">${fn}</span>`);
-    });
-    
-    result = result.replace(/"[^"]*"/g, match => `<span class="string">${match}</span>`);
-    result = result.replace(/\b\d+\b/g, match => `<span class="number">${match}</span>`);
-    result = result.replace(/^(\w+)(?=\s+.*=)/gm, match => `<span class="function">${match}</span>`);
-    
-    return result;
-  };
-
-  const handleScroll = () => {
-    if (highlightRef.current && textareaRef.current) {
-      highlightRef.current.scrollTop = textareaRef.current.scrollTop;
-      highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
-    }
   };
 
   return (
