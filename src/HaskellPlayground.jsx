@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Play, AlertCircle } from 'lucide-react';
 
 const HaskellPlayground = () => {
@@ -16,6 +16,7 @@ factorial n = n * factorial (n-1)`);
   
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
+  const textareaRef = useRef(null);
 
   const runHaskell = () => {
     setIsRunning(true);
@@ -50,7 +51,6 @@ factorial n = n * factorial (n-1)`);
             }
             
             if (bodyStart === 'do') {
-              // Parse do block
               i++;
               const doBody = [];
               while (i < lines.length && (lines[i].startsWith('  ') || lines[i].startsWith('\t'))) {
@@ -60,7 +60,6 @@ factorial n = n * factorial (n-1)`);
               }
               functions[funcName].push({ pattern: args, body: doBody, isDo: true });
             } else if (bodyStart === '' || trimmed.endsWith('=')) {
-              // Multi-line with where clause
               i++;
               let bodyLine = '';
               const whereFuncs = [];
@@ -94,7 +93,6 @@ factorial n = n * factorial (n-1)`);
                 isDo: false 
               });
             } else {
-              // Single line
               functions[funcName].push({ pattern: args, body: bodyStart, isDo: false });
               i++;
             }
@@ -110,12 +108,10 @@ factorial n = n * factorial (n-1)`);
       const evaluate = (expr, env = {}) => {
         expr = expr.trim();
         
-        // Literals
         if (expr.match(/^".*"$/)) return expr.slice(1, -1);
         if (expr.match(/^-?\d+$/)) return parseInt(expr);
         if (env[expr] !== undefined) return env[expr];
         
-        // Remove outer parentheses if they wrap the whole expression
         if (expr.startsWith('(') && expr.endsWith(')')) {
           let d = 0;
           let isWrapped = true;
@@ -130,7 +126,6 @@ factorial n = n * factorial (n-1)`);
           if (isWrapped) return evaluate(expr.slice(1, -1), env);
         }
         
-        // Tokenize
         const tokens = [];
         let current = '';
         let parenDepth = 0;
@@ -151,7 +146,6 @@ factorial n = n * factorial (n-1)`);
         
         if (tokens.length === 0) return expr;
         
-        // Check for infix operators
         const ops = ['+', '-', '*', '/'];
         for (let i = 1; i < tokens.length - 1; i++) {
           if (ops.includes(tokens[i])) {
@@ -167,7 +161,6 @@ factorial n = n * factorial (n-1)`);
         const funcName = tokens[0];
         const args = tokens.slice(1);
         
-        // Built-ins
         if (funcName === 'putStrLn') {
           const val = evaluate(args.join(' '), env);
           outputLines.push(String(val));
@@ -178,9 +171,7 @@ factorial n = n * factorial (n-1)`);
           return String(evaluate(args.join(' '), env));
         }
         
-        // User functions - handle where clauses first
         if (functions[funcName]) {
-          // Pre-process where functions once
           for (const def of functions[funcName]) {
             if (def.whereFuncs && def.whereFuncs.length > 0 && !def.whereProcessed) {
               for (const wf of def.whereFuncs) {
@@ -246,7 +237,6 @@ factorial n = n * factorial (n-1)`);
         return expr;
       };
       
-      // Run main
       if (!functions.main) {
         throw new Error(`No main function found. Found: ${Object.keys(functions).join(', ')}`);
       }
@@ -269,71 +259,321 @@ factorial n = n * factorial (n-1)`);
     setIsRunning(false);
   };
 
+  const highlightCode = (text) => {
+    const keywords = ['do', 'where', 'if', 'then', 'else', 'let', 'in', 'case', 'of', 'data', 'type', 'newtype', 'class', 'instance'];
+    const builtins = ['putStrLn', 'show', 'print', 'main'];
+    
+    let result = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    
+    keywords.forEach(kw => {
+      result = result.replace(new RegExp(`\\b${kw}\\b`, 'g'), `<span class="keyword">${kw}</span>`);
+    });
+    
+    builtins.forEach(fn => {
+      result = result.replace(new RegExp(`\\b${fn}\\b`, 'g'), `<span class="builtin">${fn}</span>`);
+    });
+    
+    result = result.replace(/"[^"]*"/g, match => `<span class="string">${match}</span>`);
+    result = result.replace(/\b\d+\b/g, match => `<span class="number">${match}</span>`);
+    result = result.replace(/^(\w+)(?=\s+.*=)/gm, match => `<span class="function">${match}</span>`);
+    
+    return result;
+  };
+
+  const handleScroll = () => {
+    if (highlightRef.current && textareaRef.current) {
+      highlightRef.current.scrollTop = textareaRef.current.scrollTop;
+      highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4">
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-              λ Haskell Playground
-            </h1>
-            <p className="text-purple-100 text-sm mt-1">Write and run Haskell code in your browser</p>
+    <>
+      <style>{`
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        body {
+          background: #000;
+          font-family: 'Courier New', monospace;
+          overflow-x: hidden;
+        }
+
+        .container {
+          min-height: 100vh;
+          background: #000;
+          padding: 40px 20px;
+          position: relative;
+        }
+
+        .container::before {
+          content: '';
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: 
+            repeating-linear-gradient(
+              0deg,
+              rgba(0, 255, 0, 0.03) 0px,
+              transparent 1px,
+              transparent 2px,
+              rgba(0, 255, 0, 0.03) 3px
+            );
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .content {
+          max-width: 1200px;
+          margin: 0 auto;
+          position: relative;
+          z-index: 2;
+        }
+
+        .header {
+          text-align: center;
+          margin-bottom: 40px;
+          border: 2px solid #00ff00;
+          padding: 20px;
+          background: rgba(0, 20, 0, 0.8);
+          box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .title {
+          font-size: 2.5em;
+          color: #00ff00;
+          text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+          letter-spacing: 4px;
+          margin-bottom: 10px;
+        }
+
+        .subtitle {
+          color: #00aa00;
+          font-size: 0.9em;
+          letter-spacing: 2px;
+        }
+
+        .editor-section {
+          margin-bottom: 30px;
+        }
+
+        .section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 15px;
+        }
+
+        .label {
+          color: #00ff00;
+          font-size: 0.9em;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+        }
+
+        .run-button {
+          background: #001a00;
+          border: 2px solid #00ff00;
+          color: #00ff00;
+          padding: 10px 25px;
+          font-family: 'Courier New', monospace;
+          font-size: 1em;
+          cursor: pointer;
+          letter-spacing: 2px;
+          transition: all 0.3s;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .run-button:hover:not(:disabled) {
+          background: #00ff00;
+          color: #000;
+          box-shadow: 0 0 20px #00ff00;
+        }
+
+        .run-button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .editor-wrapper {
+          border: 2px solid #00ff00;
+          background: #001a33;
+          box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        .code-textarea {
+          width: 100%;
+          height: 400px;
+          padding: 15px;
+          background: #001a33;
+          border: none;
+          color: #e0e0e0;
+          font-family: 'Courier New', monospace;
+          font-size: 14px;
+          line-height: 1.5;
+          resize: none;
+          outline: none;
+          caret-color: #00ff00;
+        }
+
+        .code-textarea::selection {
+          background: rgba(0, 255, 0, 0.3);
+        }
+
+        .console {
+          border: 2px solid #00ff00;
+          background: #000;
+          padding: 15px;
+          height: 200px;
+          overflow-y: auto;
+          font-family: 'Courier New', monospace;
+          font-size: 14px;
+          color: #00ff00;
+          box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        .console-output {
+          white-space: pre-wrap;
+          word-wrap: break-word;
+        }
+
+        .console-placeholder {
+          color: #005500;
+        }
+
+        .info-box {
+          border: 2px solid #00ff00;
+          background: rgba(0, 20, 0, 0.6);
+          padding: 20px;
+          margin-top: 20px;
+          display: flex;
+          gap: 15px;
+        }
+
+        .info-icon {
+          color: #00ff00;
+          flex-shrink: 0;
+        }
+
+        .info-content {
+          color: #00aa00;
+          font-size: 0.85em;
+        }
+
+        .info-title {
+          color: #00ff00;
+          margin-bottom: 10px;
+          letter-spacing: 1px;
+        }
+
+        .info-list {
+          list-style: none;
+          padding-left: 0;
+        }
+
+        .info-list li {
+          margin: 5px 0;
+          padding-left: 15px;
+          position: relative;
+        }
+
+        .info-list li::before {
+          content: '>';
+          position: absolute;
+          left: 0;
+          color: #00ff00;
+        }
+
+        ::-webkit-scrollbar {
+          width: 10px;
+          height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+          background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+          background: #00ff00;
+          border: 1px solid #000;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+          background: #00cc00;
+        }
+      `}</style>
+      
+      <div className="container">
+        <div className="content">
+          <div className="header">
+            <h1 className="title">λ HASKELL TERMINAL</h1>
+            <p className="subtitle">FUNCTIONAL PROGRAMMING INTERFACE v1.0</p>
           </div>
           
-          <div className="p-6">
-            <div className="mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-sm font-semibold text-gray-700">Code Editor</label>
-                <button
-                  onClick={runHaskell}
-                  disabled={isRunning}
-                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-colors font-semibold"
-                >
-                  <Play size={16} />
-                  Run Code
-                </button>
-              </div>
-              
-              <div className="relative">
-                <textarea
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="w-full h-96 p-4 font-mono text-sm border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none resize-none"
-                  spellCheck="false"
-                  style={{ tabSize: 2 }}
-                />
-              </div>
+          <div className="editor-section">
+            <div className="section-header">
+              <span className="label">&gt; Code Editor</span>
+              <button
+                onClick={runHaskell}
+                disabled={isRunning}
+                className="run-button"
+              >
+                <Play size={16} />
+                EXECUTE
+              </button>
             </div>
             
-            <div>
-              <label className="text-sm font-semibold text-gray-700 mb-2 block">Console Output</label>
-              <div className="bg-gray-900 text-green-400 p-4 rounded-lg h-48 overflow-y-auto font-mono text-sm">
-                {output ? (
-                  <pre className="whitespace-pre-wrap">{output}</pre>
-                ) : (
-                  <div className="text-gray-500">Output will appear here...</div>
-                )}
-              </div>
+            <div className="editor-wrapper">
+              <textarea
+                ref={textareaRef}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                className="code-textarea"
+                spellCheck="false"
+              />
             </div>
-            
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
-              <AlertCircle className="text-blue-600 flex-shrink-0" size={20} />
-              <div className="text-sm text-blue-800">
-                <p className="font-semibold mb-1">Supported Features:</p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Function definitions and recursion</li>
-                  <li>Basic arithmetic operations (+, -, *, /)</li>
-                  <li>putStrLn and show for output</li>
-                  <li>Pattern matching on numbers</li>
-                  <li>Where clauses for local functions</li>
-                  <li>Do notation for IO</li>
-                </ul>
-              </div>
+          </div>
+          
+          <div className="editor-section">
+            <div className="section-header">
+              <span className="label">&gt; Console Output</span>
+            </div>
+            <div className="console">
+              {output ? (
+                <pre className="console-output">{output}</pre>
+              ) : (
+                <div className="console-placeholder">&gt; Awaiting execution...</div>
+              )}
+            </div>
+          </div>
+          
+          <div className="info-box">
+            <AlertCircle className="info-icon" size={24} />
+            <div className="info-content">
+              <div className="info-title">SYSTEM CAPABILITIES</div>
+              <ul className="info-list">
+                <li>Function definitions and recursion</li>
+                <li>Basic arithmetic operations (+, -, *, /)</li>
+                <li>putStrLn and show for output</li>
+                <li>Pattern matching on numbers</li>
+                <li>Where clauses for local functions</li>
+                <li>Do notation for IO</li>
+              </ul>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
