@@ -1,16 +1,15 @@
 {
   "files": {
-    "main.css": "/Haskell-editor/static/css/main.f855e6bc.css",
-    "main.js": "/Haskell-editor/static/js/main.0c9536ed.js",
+    "main.css": "/Haskell-editor/static/css/main.e6c13ad2.css",
+    "main.js": "/Haskell-editor/static/js/main.5ed5e3fd.js",
     "static/js/453.e8e5af99.chunk.js": "/Haskell-editor/static/js/453.e8e5af99.chunk.js",
-    "static/media/logo.svg": "/Haskell-editor/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
     "index.html": "/Haskell-editor/index.html",
-    "main.f855e6bc.css.map": "/Haskell-editor/static/css/main.f855e6bc.css.map",
-    "main.0c9536ed.js.map": "/Haskell-editor/static/js/main.0c9536ed.js.map",
+    "main.e6c13ad2.css.map": "/Haskell-editor/static/css/main.e6c13ad2.css.map",
+    "main.5ed5e3fd.js.map": "/Haskell-editor/static/js/main.5ed5e3fd.js.map",
     "453.e8e5af99.chunk.js.map": "/Haskell-editor/static/js/453.e8e5af99.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.f855e6bc.css",
-    "static/js/main.0c9536ed.js"
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.5ed5e3fd.js"
   ]
 }
