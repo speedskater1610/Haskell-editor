@@ -11,7 +11,7 @@
 ## reason to build
 My school handed us what might be the most underpowered Chromebooks known to human civilization. Being someone who likes to write code in basically every class instead of doing the work I’m actually supposed to be doing, I rely heavily on our school’s provided platform, CodeHS.
 
-Don’t get me wrong CodeHS is great. Without it, I’d probably be sitting there staring at Google Docs pretending it’s a compiler. But it has… drawbacks. For one, their editor is not vi, vim, or neovim (btw).
+Don’t get me wrong CodeHS is great. Without it, I’d probably be sitting there staring at Google Docs pretending it’s a compiler. But it has… drawbacks. For one, their editor is not vi, vim, or neovim (btw) (I need my sweet h,j,k,l).
 Also: please, I am begging you, let us make header/source files in C/C++ that actually talk to each other. Let people use makefiles. Unleash the chaos.
 
 But the real tragedy?
