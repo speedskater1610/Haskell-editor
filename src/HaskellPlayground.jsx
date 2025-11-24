@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Play, AlertCircle } from 'lucide-react';
 
 const HaskellPlayground = () => {
@@ -16,7 +16,6 @@ factorial n = n * factorial (n-1)`);
   
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
-  const textareaRef = useRef(null);
 
   const runHaskell = () => {
     setIsRunning(true);
@@ -535,7 +534,6 @@ factorial n = n * factorial (n-1)`);
             
             <div className="editor-wrapper">
               <textarea
-                ref={textareaRef}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 className="code-textarea"
