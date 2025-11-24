@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/Haskell-editor/static/css/main.e6c13ad2.css",
-    "main.js": "/Haskell-editor/static/js/main.5ed5e3fd.js",
+    "main.js": "/Haskell-editor/static/js/main.ac9a6732.js",
     "static/js/453.e8e5af99.chunk.js": "/Haskell-editor/static/js/453.e8e5af99.chunk.js",
     "index.html": "/Haskell-editor/index.html",
     "main.e6c13ad2.css.map": "/Haskell-editor/static/css/main.e6c13ad2.css.map",
-    "main.5ed5e3fd.js.map": "/Haskell-editor/static/js/main.5ed5e3fd.js.map",
+    "main.ac9a6732.js.map": "/Haskell-editor/static/js/main.ac9a6732.js.map",
     "453.e8e5af99.chunk.js.map": "/Haskell-editor/static/js/453.e8e5af99.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.5ed5e3fd.js"
+    "static/js/main.ac9a6732.js"
   ]
 }
