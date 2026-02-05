@@ -1,4 +1,9 @@
 # Haskell Editor
+
+# **Edit my school blocked it :(**
+
+![proof](they_blocked_me.png)
+
 ## features
 - Function definitions and recursion
 - Basic arithmetic operations (+, -, *, /)
