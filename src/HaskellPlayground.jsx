@@ -1,3 +1,5 @@
+// I wanted to add some more stuff but after 3 months and me writing this at 3AM with no commenting, that didn't turn out well. 
+
 import React, { useState } from 'react';
 import { Play, AlertCircle } from 'lucide-react';
 
